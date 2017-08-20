@@ -114,11 +114,9 @@ export default {
             if (!this.selectedSlots[key]) {
                 this.$set(this.selectedSlots, key, {});
             }
-            let slots = _.extend(this.selectedSlots[key]);
+            let slots = Object.assign({}, this.selectedSlots[key]);
             slots[time] = true;
             this.$set(this.selectedSlots, key, slots);
-
-            this.$set(this.selectedSlots[key], time, true);
         }
     }
 }
