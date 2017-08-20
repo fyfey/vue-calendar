@@ -15,7 +15,7 @@
           </thead>
           <tbody>
               <tr v-for="week in calendar">
-                  <calendar-day v-for="day in week" :day="day" :month="month" :year="year" :today="today" :key="''+year+month+day" :selectedSlots="selectedSlots" v-on:select-day="selectDay" />
+                  <calendar-day v-for="day in week" :day="day" :month="month" :year="year" :today="today" :key="''+year+month+day" :selectedSlots="selectedSlots" :selected-day="selectedDay" v-on:select-day="selectDay" />
               </tr>
           </tbody>
       </table>
@@ -23,12 +23,16 @@
       <template v-if="selectedDay">
           Select availability for {{selectedDay.day}} {{selectedDayMonthName}} {{selectedDay.year}}:
           <table>
-            <tr>
-                <td v-for="slot in timeSlots">{{slot.label}}</td>
-            </tr>
-            <tr>
-                <time-slot v-for="slot in timeSlots" :selected-day="selectedDay" :selectedSlots="selectedSlots" v-on:choose-slot="chooseSlot" :time-slot="slot" :key="''+slot.value"/>
-            </tr>
+            <thead>
+                <tr>
+                    <td v-for="slot in timeSlots">{{slot.label}}</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <time-slot v-for="slot in timeSlots" :selected-day="selectedDay" :selectedSlots="selectedSlots" v-on:choose-slot="toggleSlot" :time-slot="slot" :key="''+slot.value"/>
+                </tr>
+            </tbody>
           </table>
       </template>
   </div>
@@ -109,14 +113,28 @@ export default {
         selectDay(selectedDay) {
             this.selectedDay = selectedDay;
         },
-        chooseSlot(day, time) {
+        toggleSlot(day, time) {
             var key = `${day.year}-${day.month}-${day.day}`;
-            if (!this.selectedSlots[key]) {
-                this.$set(this.selectedSlots, key, {});
+            this.ensureArrayExists(key);
+            // If it isn't in the array, set it, if not, remove it
+            if (!_.includes(this.selectedSlots[key], time)) {
+                this.selectedSlots[key].push(time);
+            } else {
+                this.selectedSlots[key].splice(this.selectedSlots[key].indexOf(time), 1);
             }
-            let slots = Object.assign({}, this.selectedSlots[key]);
-            slots[time] = true;
-            this.$set(this.selectedSlots, key, slots);
+            this.ensureNoGaps(key);
+        },
+        ensureArrayExists(key) {
+            if (!this.selectedSlots[key]) {
+                this.$set(this.selectedSlots, key, []);
+            }
+        },
+        ensureNoGaps(key) {
+            for (let i = _.min(this.selectedSlots[key]); i < _.max(this.selectedSlots[key]); i++) {
+                if (!_.includes(this.selectedSlots[key], i)) {
+                    this.selectedSlots[key].push(i);
+                }
+            }
         }
     }
 }
@@ -164,6 +182,15 @@ td.today {
 } 
 td.chosen {
     background: #c1ffc1;
+}
+td.active {
+    //border: 2px solid #999;
+    box-shadow: inset 0 0 5px #00f;
+}
+tbody td a {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 </style>

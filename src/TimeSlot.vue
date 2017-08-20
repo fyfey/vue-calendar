@@ -14,7 +14,7 @@ export default {
             get() {
                 let key = `${this.selectedDay.year}-${this.selectedDay.month}-${this.selectedDay.day}`;
                 return {
-                    chosen: _.has(this.selectedSlots[key], this.timeSlot.value),
+                    chosen: _.includes(this.selectedSlots[key], this.timeSlot.value),
                 }
             }
         }
