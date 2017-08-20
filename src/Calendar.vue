@@ -27,7 +27,7 @@
                 <td v-for="slot in timeSlots">{{slot.label}}</td>
             </tr>
             <tr>
-                <td v-for="slot in timeSlots" :class="slotClass"><a href="#" @click="chooseSlot(selectedDay, slot.value)">{{slot.value}}</a></td>
+                <time-slot v-for="slot in timeSlots" :selected-day="selectedDay" :selectedSlots="selectedSlots" v-on:choose-slot="chooseSlot" :time-slot="slot" :key="''+slot.value"/>
             </tr>
           </table>
       </template>
@@ -111,12 +111,14 @@ export default {
         },
         chooseSlot(day, time) {
             var key = `${day.year}-${day.month}-${day.day}`;
-            let slots = _.extend(this.selectedSlots[key]);
-            if (!slots[key]) {
-                slots[key] = {};
+            if (!this.selectedSlots[key]) {
+                this.$set(this.selectedSlots, key, {});
             }
+            let slots = _.extend(this.selectedSlots[key]);
             slots[time] = true;
-            this.$set(this.selectedSlots, key, true);
+            this.$set(this.selectedSlots, key, slots);
+
+            this.$set(this.selectedSlots[key], time, true);
         }
     }
 }
